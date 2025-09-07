@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hotel Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Hotel Management System</h1>
+        {% if session.get('logged_in') %}
+        <nav>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/customers">Customers</a>
+            <a href="/bookings">Bookings</a>
+            <a href="/rooms">Rooms</a>
+            <a href="/payments">Payments</a>
+            <a href="/logout">Logout</a>
+        </nav>
+        {% endif %}
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>© 2025 HMS Project</p>
+    </footer>
+</body>
+</html>
