@@ -1,3 +1,4 @@
+/* General Styles */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -25,6 +26,8 @@ nav a:hover {
 main {
     padding: 20px;
 }
+
+/* Login Page */
 .login-container {
     background: white;
     width: 300px;
@@ -65,6 +68,8 @@ main {
 .login-container button:hover {
     background: #34495e;
 }
+
+/* Dashboard Cards */
 .dashboard {
     text-align: center;
 }
@@ -109,4 +114,67 @@ main {
 
 .card a:hover {
     background: #34495e;
+}
+
+/* Payments Table */
+table, th, td {
+    border: 1px solid #ccc;
+    border-collapse: collapse;
+    padding: 8px;
+    background: white;
+}
+
+th {
+    background-color: #eee;
+    text-align: left;
+}
+
+td a {
+    margin-right: 5px;
+    text-decoration: none;
+}
+
+/* Buttons for Payments Actions */
+.button-blue {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.button-blue:hover {
+    background-color: #2980b9;
+}
+
+.button-red {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.button-red:hover {
+    background-color: #c0392b;
+}
+
+/* Payment Forms & Sections */
+.hidden {
+    display: none;
+}
+
+h1, h2, h3 {
+    color: #333;
+}
+
+form input, form select, form button, form a {
+    margin-top: 5px;
+    display: block;
 }

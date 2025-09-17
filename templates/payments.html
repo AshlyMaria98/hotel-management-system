@@ -1,6 +1,160 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payments & Billing</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f7f7f7; }
+        nav { margin-bottom: 20px; }
+        nav a { margin-right: 15px; text-decoration: none; font-weight: bold; color: #333; }
+        table, th, td { border: 1px solid black; border-collapse: collapse; padding: 8px; }
+        th { background-color: #eee; }
+        button, input, select { margin-top: 5px; }
+        h1, h2 { color: #333; }
+        .hidden { display: none; }
+        .button-red { background-color:red; color:white; }
+    </style>
+    <script>
+        function calculateTotal() {
+            let days = parseInt(document.getElementById("days").value) || 0;
+            let stay = days * 200;
+            let food = days * 500;
+            let total = stay + food;
+            document.getElementById("food").value = food;
+            document.getElementById("amount").value = total;
+        }
+    </script>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('payments') }}">Payments</a>
+    </nav>
 
-{% block content %}
-<h2>Payments</h2>
-<p>This is the Payments page. Handle billing here.</p>
-{% endblock %}
+    <!-- Add Payment -->
+    <div id="add_payment" class="{% if view_type != 'add' %}hidden{% endif %}">
+        <h2>Add Payment</h2>
+        <form method="POST">
+            <label>Customer Name:</label><br>
+            <input type="text" name="customer_name" required><br>
+            <label>Customer ID:</label><br>
+            <input type="text" name="customer_id" required><br>
+            <label>Room No:</label><br>
+            <input type="text" name="room_no" required><br>
+            <label>Number of Days Stay:</label><br>
+            <input type="number" id="days" name="days" oninput="calculateTotal()" required><br>
+            <label>Food & Beverages (₹500 × days):</label><br>
+            <input type="number" id="food" name="food" readonly><br>
+            <label>Total Amount:</label><br>
+            <input type="number" id="amount" name="amount" readonly required><br>
+            <label>Date:</label><br>
+            <input type="date" name="date" required><br>
+            <label>Mode of Payment:</label><br>
+            <select name="mode" required>
+                <option value="Cash">Cash</option>
+                <option value="Card">Card</option>
+                <option value="UPI">UPI</option>
+            </select><br><br>
+            <button type="submit">Add Payment</button>
+        </form>
+    </div>
+
+    <!-- Payment History -->
+    <div id="payments" class="{% if view_type != 'payments' %}hidden{% endif %}">
+        <h2>Payment History</h2>
+        <a href="{{ url_for('add_payment') }}">➕ Add New Payment</a>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Customer Name</th>
+                <th>Customer ID</th>
+                <th>Room No</th>
+                <th>Days</th>
+                <th>Food</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Mode</th>
+                <th>Actions</th>
+            </tr>
+            {% for p in payments %}
+            <tr>
+                <td>{{ p[0] }}</td>
+                <td>{{ p[5] }}</td>
+                <td>{{ p[6] }}</td>
+                <td>{{ p[7] }}</td>
+                <td>{{ p[8] }}</td>
+                <td>{{ p[9] }}</td>
+                <td>{{ p[2] }}</td>
+                <td>{{ p[3] }}</td>
+                <td>{{ p[4] }}</td>
+                <td>
+                    <a href="{{ url_for('edit_payment', id=p[0]) }}">Edit</a> |
+                    <a href="{{ url_for('delete_payment', id=p[0]) }}">Delete</a> |
+                    <a href="{{ url_for('bill', id=p[0]) }}">Bill</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <!-- Edit Payment -->
+    <div id="edit_payment" class="{% if view_type != 'edit' %}hidden{% endif %}">
+        <h2>Edit Payment</h2>
+        {% if payment %}
+        <form method="POST">
+            <label>Booking ID:</label><br>
+            <input type="text" name="booking_id" value="{{ payment[1] }}" required><br>
+            <label>Amount:</label><br>
+            <input type="number" step="0.01" name="amount" value="{{ payment[2] }}" required><br>
+            <label>Date:</label><br>
+            <input type="date" name="date" value="{{ payment[3] }}" required><br>
+            <label>Mode of Payment:</label><br>
+            <select name="mode" required>
+                <option value="Cash" {% if payment[4]=="Cash" %}selected{% endif %}>Cash</option>
+                <option value="Card" {% if payment[4]=="Card" %}selected{% endif %}>Card</option>
+                <option value="UPI" {% if payment[4]=="UPI" %}selected{% endif %}>UPI</option>
+            </select><br><br>
+            <button type="submit">Update Payment</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- Delete Payment -->
+    <div id="delete_payment" class="{% if view_type != 'delete' %}hidden{% endif %}">
+        <h2>Delete Payment</h2>
+        {% if payment %}
+        <p>Are you sure you want to delete this payment?</p>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Booking ID</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Mode</th>
+            </tr>
+            <tr>
+                <td>{{ payment[0] }}</td>
+                <td>{{ payment[1] }}</td>
+                <td>{{ payment[2] }}</td>
+                <td>{{ payment[3] }}</td>
+                <td>{{ payment[4] }}</td>
+            </tr>
+        </table>
+        <form method="POST">
+            <button type="submit" class="button-red">Yes, Delete</button>
+            <a href="{{ url_for('payments') }}">Cancel</a>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- Bill -->
+    <div id="bill" class="{% if view_type != 'bill' %}hidden{% endif %}">
+        <h2>Hotel Bill</h2>
+        <p><b>Payment ID:</b> {{ payment_id }}</p>
+        <p><b>Booking ID:</b> {{ booking_id }}</p>
+        <p><b>Amount:</b> ₹{{ amount }}</p>
+        <p><b>Date:</b> {{ date }}</p>
+        <p><b>Mode of Payment:</b> {{ mode }}</p>
+        <hr>
+        <h3>✅ Thank you for your payment!</h3>
+    </div>
+</body>
+</html>
