@@ -49,9 +49,26 @@ def logout():
 
 
 # ----------------- CUSTOMERS MODULE (Teammate A) -----------------
-@app.route('/customers')
+@app.route("/customers", methods=["GET", "POST"])
 def customers():
-    return render_template('customers.html')
+    from models import Customer
+
+    if request.method == "POST":
+        name = request.form["name"]
+        contact = request.form["contact"]
+
+        if not name or not contact:
+            flash("All fields are required.", "danger")
+            return redirect(url_for("customers"))
+
+        new_customer = Customer(name=name, contact=contact)
+        db.session.add(new_customer)
+        db.session.commit()
+        flash("Customer added successfully!", "success")
+
+    customers = Customer.query.all()
+    return render_template("customers.html", customers=customers)
+
 
 
 # ----------------- BOOKINGS MODULE (Teammate B) -----------------
