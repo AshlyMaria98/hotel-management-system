@@ -2,5 +2,41 @@
 
 {% block content %}
 <h2>Rooms</h2>
-<p>This is the Rooms page. Manage room info here.</p>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul>
+      {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<h3>All Rooms</h3>
+<table>
+  <thead>
+    <tr><th>Room No</th><th>Type</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    {% for room in rooms %}
+    <tr>
+      <td>{{ room.room_no }}</td>
+      <td>{{ room.type }}</td>
+      <td>{{ room.status }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h3>Add a New Room</h3>
+<form method="POST">
+  <label>Room Number:</label>
+  <input type="number" name="room_no" required><br>
+
+  <label>Room Type:</label>
+  <input type="text" name="type" required><br><br>
+
+  <button type="submit">Add Room</button>
+</form>
 {% endblock %}
