@@ -1,6 +1,10 @@
+from models import db, Customer, Room, Booking
+import datetime
+from datetime import datetime as dt
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from models import db   # your models.py has db + tables
 import sqlite3
+
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
@@ -50,16 +54,76 @@ def logout():
 
 
 # ----------------- CUSTOMERS MODULE -----------------
-@app.route('/customers')
+# ----------------- CUSTOMERS MODULE (Teammate: You) -----------------
+@app.route('/customers', methods=['GET', 'POST'])
 def customers():
-    return render_template('customers.html')
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    # Create new customer
+    if request.method == 'POST':
+        name = request.form.get('name','').strip()
+        phone = request.form.get('phone','').strip()
+        email = request.form.get('email','').strip()
+        address = request.form.get('address','').strip()
+
+        if not name or not phone:
+            flash("Name and phone are required", "danger")
+            return redirect(url_for('customers'))
+
+        new_c = Customer(name=name, phone=phone, email=email, address=address)
+        db.session.add(new_c)
+        db.session.commit()
+        flash("Customer added", "success")
+        return redirect(url_for('customers'))
+
+    # GET: show list + form
+    all_customers = Customer.query.order_by(Customer.id.desc()).all()
+    return render_template('customers.html', customers=all_customers)
+
+
+@app.route('/customers/edit/<int:id>', methods=['GET', 'POST'])
+def edit_customer(id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    c = Customer.query.get_or_404(id)
+    if request.method == 'POST':
+        c.name = request.form.get('name','').strip()
+        c.phone = request.form.get('phone','').strip()
+        c.email = request.form.get('email','').strip()
+        c.address = request.form.get('address','').strip()
+
+        if not c.name or not c.phone:
+            flash("Name and phone are required", "danger")
+            return redirect(url_for('edit_customer', id=id))
+
+        db.session.commit()
+        flash("Customer updated", "success")
+        return redirect(url_for('customers'))
+
+    # show customers list + prefill edit form
+    all_customers = Customer.query.order_by(Customer.id.desc()).all()
+    return render_template('customers.html', customers=all_customers, edit_customer=c)
+
+
+@app.route('/customers/delete/<int:id>', methods=['POST'])
+def delete_customer(id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    c = Customer.query.get_or_404(id)
+    db.session.delete(c)
+    db.session.commit()
+    flash("Customer deleted", "success")
+    return redirect(url_for('customers'))
+
 
 
 # ----------------- BOOKINGS MODULE -----------------
 @app.route('/bookings')
 def bookings():
     return render_template('bookings.html')
-
 
 # ----------------- ROOMS MODULE -----------------
 @app.route('/rooms')
