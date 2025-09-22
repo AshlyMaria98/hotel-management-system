@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Edit Room</h2>
+
+<form method="POST">
+  <input type="text" name="room_number" value="{{ room.room_number }}" required>
+  <input type="text" name="room_type" value="{{ room.room_type }}" required>
+  <input type="number" name="price" value="{{ room.price }}" step="0.01" required>
+  <select name="status">
+    <option value="available" {% if room.status == 'available' %}selected{% endif %}>Available</option>
+    <option value="occupied" {% if room.status == 'occupied' %}selected{% endif %}>Occupied</option>
+  </select>
+  <button type="submit">Update Room</button>
+</form>
+
+<a href="{{ url_for('rooms') }}">Back to Rooms</a>
+{% endblock %}
