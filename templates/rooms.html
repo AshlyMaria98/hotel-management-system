@@ -4,12 +4,23 @@
 
 <form method="POST" action="{{ url_for('add_room') }}">
   <input type="text" name="room_number" placeholder="Room Number" required>
-  <input type="text" name="room_type" placeholder="Room Type" required>
+
+  <!-- Room Type Dropdown -->
+  <select name="room_type" required>
+    <option value="">Select Room Type</option>
+    <option value="Single">Single</option>
+    <option value="Double">Double</option>
+    <option value="Suite">Suite</option>
+    <option value="Deluxe">Deluxe</option>
+  </select>
+
   <input type="number" name="price" placeholder="Price" step="0.01" required>
-  <select name="status">
+
+  <select name="status" required>
     <option value="available">Available</option>
     <option value="occupied">Occupied</option>
   </select>
+
   <button type="submit">Add Room</button>
 </form>
 
@@ -33,4 +44,3 @@
   {% endfor %}
 </table>
 {% endblock %}
-
