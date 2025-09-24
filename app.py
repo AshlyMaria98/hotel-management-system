@@ -126,10 +126,45 @@ def bookings():
     return render_template('bookings.html')
 
 # ----------------- ROOMS MODULE -----------------
+
 @app.route('/rooms')
 def rooms():
-    return render_template('rooms.html')
+    rooms = Room.query.all()
+    return render_template('rooms.html', rooms=rooms)
 
+
+@app.route('/rooms/add', methods=['POST'])
+def add_room():
+    room_no = request.form['room_number']
+    type = request.form['room_type']
+    price = request.form['price']
+    # status = request.form['status']  # Optional, for future use
+
+    new_room = Room(room_no=room_no, type=type, price=price)
+    db.session.add(new_room)
+    db.session.commit()
+    return redirect(url_for('rooms'))
+
+
+@app.route('/rooms/edit/<int:id>', methods=['GET', 'POST'])
+def edit_room(id):
+    room = Room.query.get_or_404(id)
+    if request.method == 'POST':
+        room.room_no = request.form['room_number']
+        room.type = request.form['room_type']
+        room.price = request.form['price']
+        # room.status = request.form['status']  # Optional
+        db.session.commit()
+        return redirect(url_for('rooms'))
+    return render_template('edit_room.html', room=room)
+
+
+@app.route('/rooms/delete/<int:id>', methods=['POST'])
+def delete_room(id):
+    room = Room.query.get_or_404(id)
+    db.session.delete(room)
+    db.session.commit()
+    return redirect(url_for('rooms'))
 
 # ----------------- PAYMENTS MODULE -----------------
 DB_NAME = 'hotel.db'

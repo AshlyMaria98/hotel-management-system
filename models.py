@@ -11,9 +11,10 @@ class Customer(db.Model):
 
 class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    room_no = db.Column(db.String(10), nullable=False, unique=True)
-    type = db.Column(db.String(50))
-    price = db.Column(db.Float)
+    room_no = db.Column(db.String(10), nullable=False)
+    type = db.Column(db.String(50), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    # status = db.Column(db.String(20))  # Optional, comment out if unused
 
 class Booking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
