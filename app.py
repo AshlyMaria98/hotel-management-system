@@ -126,13 +126,37 @@ def delete_customer(id):
     db.session.commit()
     flash("Customer deleted", "success")
     return redirect(url_for('customers'))
-
-
+@app.route('/delete_booking/<int:id>')
+def delete_booking(id):
+    booking = Booking.query.get_or_404(id)
+    db.session.delete(booking)
+    db.session.commit()
+    return redirect(url_for('bookings'))
 
 # ----------------- BOOKINGS MODULE -----------------
-@app.route('/bookings')
+@app.route('/bookings', methods=['GET', 'POST'])
 def bookings():
-    return render_template('bookings.html')
+    if request.method == 'POST':
+        customer_id = request.form['customer_id']
+        room_id = request.form['room_id']
+        checkin = request.form['checkin']
+        checkout = request.form['checkout']
+
+        new_booking = Booking(
+            customer_id=customer_id,
+            room_id=room_id,
+            checkin=checkin,
+            checkout=checkout
+        )
+        db.session.add(new_booking)
+        db.session.commit()
+        return redirect(url_for('bookings'))
+
+    all_bookings = Booking.query.all()
+    customers = Customer.query.all()
+    rooms = Room.query.all()
+    return render_template('bookings.html', bookings=all_bookings, customers=customers, rooms=rooms)
+
 
 # ----------------- ROOMS MODULE -----------------
 
