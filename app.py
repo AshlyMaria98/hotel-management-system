@@ -1,16 +1,21 @@
+from models import db   # your models.py has db + tables
+import sqlite3
 from models import db, Customer, Room, Booking
 import datetime
 from datetime import datetime as dt
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from models import db   # your models.py has db + tables
-import sqlite3
+
 
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
 
 # ----------------- DATABASE SETUP -----------------
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///hotel.db'
+
+import os
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'hotel.db')
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -18,6 +23,10 @@ db.init_app(app)
 with app.app_context():
     db.create_all()   # creates all tables defined in models.py
 
+print("USING DB:", app.config["SQLALCHEMY_DATABASE_URI"])
+import os
+db_path = app.config["SQLALCHEMY_DATABASE_URI"].replace("sqlite:///", "")
+print("FULL PATH DB:", os.path.abspath(db_path))
 
 # ----------------- LOGIN / DASHBOARD -----------------
 @app.route('/')
@@ -133,17 +142,26 @@ def rooms():
     return render_template('rooms.html', rooms=rooms)
 
 
-@app.route('/rooms/add', methods=['POST'])
-def add_room():
-    room_no = request.form['room_number']
-    type = request.form['room_type']
-    price = request.form['price']
-    # status = request.form['status']  # Optional, for future use
 
-    new_room = Room(room_no=room_no, type=type, price=price)
-    db.session.add(new_room)
-    db.session.commit()
-    return redirect(url_for('rooms'))
+@app.route('/add_room', methods=['GET', 'POST'])
+def add_room():
+    if request.method == 'POST':
+        room_no = request.form['room_number']
+        room_type = request.form['room_type']
+        price = request.form['price']
+        room_status = request.form['status']   # ✅ fetch status
+
+        new_room = Room(
+            room_no=room_no,
+            type=room_type,
+            price=price,
+            status=room_status   # ✅ save status
+        )
+        db.session.add(new_room)
+        db.session.commit()
+        return redirect(url_for('rooms'))
+    return render_template('add_room.html')
+
 
 
 @app.route('/rooms/edit/<int:id>', methods=['GET', 'POST'])
@@ -153,7 +171,7 @@ def edit_room(id):
         room.room_no = request.form['room_number']
         room.type = request.form['room_type']
         room.price = request.form['price']
-        # room.status = request.form['status']  # Optional
+        room.status = request.form['status']  # Optional
         db.session.commit()
         return redirect(url_for('rooms'))
     return render_template('edit_room.html', room=room)
@@ -168,8 +186,6 @@ def delete_room(id):
 
 # ----------------- PAYMENTS MODULE -----------------
 DB_NAME = 'hotel.db'
-
-# Initialize DB with new schema
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -192,17 +208,15 @@ def init_db():
 
 init_db()
 
-
 # Show all payments
 @app.route('/payments')
 def payments():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("SELECT * FROM payments ORDER BY id DESC")
-    payments = c.fetchall()
+    payments_list = c.fetchall()
     conn.close()
-    return render_template('payments.html', view_type='payments', payments=payments)
-
+    return render_template('payments.html', view_type='payments', payments=payments_list)
 
 # Add new payment
 @app.route('/payments/add', methods=['GET', 'POST'])
@@ -230,7 +244,6 @@ def add_payment():
 
     return render_template('payments.html', view_type='add')
 
-
 # Edit payment
 @app.route('/payments/edit/<int:id>', methods=['GET', 'POST'])
 def edit_payment(id):
@@ -255,7 +268,6 @@ def edit_payment(id):
     conn.close()
     return render_template('payments.html', view_type='edit', payment=payment)
 
-
 # Delete payment
 @app.route('/payments/delete/<int:id>', methods=['GET', 'POST'])
 def delete_payment(id):
@@ -272,7 +284,6 @@ def delete_payment(id):
 
     conn.close()
     return render_template('payments.html', view_type='delete', payment=payment)
-
 
 # Generate bill
 @app.route('/payments/bill/<int:id>')

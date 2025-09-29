@@ -14,7 +14,7 @@ class Room(db.Model):
     room_no = db.Column(db.String(10), nullable=False)
     type = db.Column(db.String(50), nullable=False)
     price = db.Column(db.Float, nullable=False)
-    # status = db.Column(db.String(20))  # Optional, comment out if unused
+    status = db.Column(db.String(20))  # Optional, now uncommented
 
 class Booking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -24,6 +24,7 @@ class Booking(db.Model):
     checkout = db.Column(db.String(20))
 
 class Payment(db.Model):
+    __tablename__ = 'payments'
     id = db.Column(db.Integer, primary_key=True)
     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
     amount = db.Column(db.Float)
