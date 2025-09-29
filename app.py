@@ -130,9 +130,41 @@ def delete_customer(id):
 
 
 # ----------------- BOOKINGS MODULE -----------------
-@app.route('/bookings')
+@app.route('/bookings', methods=['GET', 'POST'])
 def bookings():
-    return render_template('bookings.html')
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    customers = Customer.query.all()
+    rooms = Room.query.all()
+
+    if request.method == 'POST':
+        customer_id = request.form.get('customer_id')
+        room_id = request.form.get('room_id')
+        checkin = request.form.get('checkin')
+        checkout = request.form.get('checkout')
+
+        if not customer_id or not room_id or not checkin or not checkout:
+            flash("All fields are required", "danger")
+            return redirect(url_for('bookings'))
+
+        new_booking = Booking(
+            customer_id=customer_id,
+            room_id=room_id,
+            checkin=checkin,
+            checkout=checkout
+        )
+        db.session.add(new_booking)
+        db.session.commit()
+        flash("Booking added successfully!", "success")
+        return redirect(url_for('bookings'))
+
+    all_bookings = Booking.query.order_by(Booking.id.desc()).all()
+    return render_template('bookings.html',
+                           bookings=all_bookings,
+                           customers=customers,
+                           rooms=rooms)
+
 
 # ----------------- ROOMS MODULE -----------------
 

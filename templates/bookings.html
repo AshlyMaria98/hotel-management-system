@@ -1,6 +1,54 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bookings</title>
+</head>
+<body>
+    <h1>📚 Bookings Page</h1>
 
-{% block content %}
-<h2>Bookings</h2>
-<p>This is the Bookings page. Add booking forms here.</p>
-{% endblock %}
+    <h3>Add Booking</h3>
+    <form method="POST">
+        <label>Customer:</label>
+        <select name="customer_id">
+            {% for customer in customers %}
+                <option value="{{ customer.id }}">{{ customer.name }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label>Room:</label>
+        <select name="room_id">
+            {% for room in rooms %}
+                <option value="{{ room.id }}">{{ room.room_no }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label>Check-in:</label>
+        <input type="date" name="checkin"><br>
+
+        <label>Check-out:</label>
+        <input type="date" name="checkout"><br>
+
+        <button type="submit">Book</button>
+    </form>
+
+    <h3>All Bookings</h3>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Customer ID</th>
+            <th>Room ID</th>
+            <th>Check-in</th>
+            <th>Check-out</th>
+        </tr>
+        {% for b in bookings %}
+        <tr>
+            <td>{{ b.id }}</td>
+            <td>{{ b.customer_id }}</td>
+            <td>{{ b.room_id }}</td>
+            <td>{{ b.checkin }}</td>
+            <td>{{ b.checkout }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
