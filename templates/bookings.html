@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
@@ -112,3 +113,85 @@
     </table>
 </div>
 {% endblock %}
+=======
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bookings</title>
+</head>
+<body>
+<h2>Bookings</h2>
+
+<!-- Add / Edit Form -->
+<form method="POST" action="{{ url_for('bookings') if not edit_booking else url_for('edit_booking', id=edit_booking.id) }}">
+    <label>Customer:</label>
+    <select name="customer_id" required>
+        {% for c in customers %}
+        <option value="{{ c.id }}" {% if edit_booking and edit_booking.customer_id == c.id %}selected{% endif %}>
+            {{ c.name }}
+        </option>
+        {% endfor %}
+    </select><br>
+
+    <label>Room:</label>
+    <select name="room_id" required>
+        {% for r in rooms %}
+        <option value="{{ r.id }}" {% if edit_booking and edit_booking.room_id == r.id %}selected{% endif %}>
+            Room {{ r.room_no }} ({{ r.type }})
+        </option>
+        {% endfor %}
+    </select><br>
+
+    <label>Check-in:</label>
+    <input type="date" name="check_in" value="{{ edit_booking.check_in if edit_booking else '' }}" required><br>
+
+    <label>Check-out:</label>
+    <input type="date" name="check_out" value="{{ edit_booking.check_out if edit_booking else '' }}" required><br>
+
+    {% if edit_booking %}
+        <label>Status:</label>
+        <select name="status">
+            <option value="booked" {% if edit_booking.status == "booked" %}selected{% endif %}>Booked</option>
+            <option value="checked_in" {% if edit_booking.status == "checked_in" %}selected{% endif %}>Checked In</option>
+            <option value="checked_out" {% if edit_booking.status == "checked_out" %}selected{% endif %}>Checked Out</option>
+            <option value="canceled" {% if edit_booking.status == "canceled" %}selected{% endif %}>Canceled</option>
+        </select><br>
+    {% endif %}
+
+    <button type="submit">{{ "Update Booking" if edit_booking else "Add Booking" }}</button>
+</form>
+
+<hr>
+
+<!-- Bookings List -->
+<table border="1" cellpadding="5">
+    <tr>
+        <th>ID</th>
+        <th>Customer</th>
+        <th>Room</th>
+        <th>Check-in</th>
+        <th>Check-out</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+    {% for b in bookings %}
+    <tr>
+        <td>{{ b.id }}</td>
+        <td>{{ b.customer.name }}</td>
+        <td>Room {{ b.room.room_no }} ({{ b.room.type }})</td>
+        <td>{{ b.check_in }}</td>
+        <td>{{ b.check_out }}</td>
+        <td>{{ b.status }}</td>
+        <td>
+            <a href="{{ url_for('edit_booking', id=b.id) }}">Edit</a>
+            <form method="POST" action="{{ url_for('delete_booking', id=b.id) }}" style="display:inline;">
+                <button type="submit" onclick="return confirm('Delete booking?')">Delete</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>
+>>>>>>> 2488b5c3d6736afcda4e16e4b4b4e7547d35b067
