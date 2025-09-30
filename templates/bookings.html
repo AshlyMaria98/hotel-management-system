@@ -1,6 +1,104 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bookings</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
 
-{% block content %}
-<h2>Bookings</h2>
-<p>This is the Bookings page. Add booking forms here.</p>
-{% endblock %}
+    <h2 class="mb-4">Bookings</h2>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Add Booking Form -->
+    <div class="card mb-4">
+        <div class="card-header">Add Booking</div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('bookings') }}">
+                <div class="mb-3">
+                    <label for="customer" class="form-label">Customer</label>
+                    <select name="customer_id" id="customer" class="form-select" required>
+                        <option value="">Select Customer</option>
+                        {% for customer in customers %}
+                            <option value="{{ customer.id }}">{{ customer.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="room" class="form-label">Room</label>
+                    <select name="room_id" id="room" class="form-select" required>
+                        <option value="">Select Room</option>
+                        {% for room in rooms %}
+                            <option value="{{ room.id }}">{{ room.room_no }} - {{ room.type }} ({{ room.status }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="checkin" class="form-label">Check-in Date</label>
+                    <input type="date" name="checkin" id="checkin" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="checkout" class="form-label">Check-out Date</label>
+                    <input type="date" name="checkout" id="checkout" class="form-control" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Add Booking</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bookings Table -->
+    <h4>All Bookings</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Customer</th>
+                <th>Room</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+                <tr>
+                    <td>{{ booking.id }}</td>
+                    <td>{{ booking.customer.name }}</td>
+                    <td>{{ booking.room.room_no }} - {{ booking.room.type }}</td>
+                    <td>{{ booking.checkin }}</td>
+                    <td>{{ booking.checkout }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('cancel_booking', id=booking.id) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">No bookings found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
