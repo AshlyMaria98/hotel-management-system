@@ -131,203 +131,55 @@ def delete_customer(id):
 
 
 # ----------------- BOOKINGS MODULE -----------------
-<<<<<<< HEAD
-# ----------------- BOOKINGS MODULE -----------------
-
-@app.route('/bookings')
-=======
-<<<<<<< HEAD
 @app.route('/bookings', methods=['GET', 'POST'])
-=======
-# ----------------- BOOKINGS MODULE -----------------
-@app.route('/bookings')
->>>>>>> e001c0388bb89bd89558d4debc84f49f622ca41e
->>>>>>> 144cd83c3279035aae150e1786786b6ea0763966
 def bookings():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-    
-    all_bookings = Booking.query.order_by(Booking.id.desc()).all()
-    return render_template('bookings.html', bookings=all_bookings)
 
-@app.route('/bookings/add', methods=['GET', 'POST'])
-def add_booking():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
+    # Fetch all customers and available rooms
+    customers = Customer.query.all()
+    rooms = Room.query.filter_by(status='Available').all()
 
-<<<<<<< HEAD
+    # Handle Add Booking form submission
     if request.method == 'POST':
-        customer_id = request.form.get('customer_id')
-        room_id = request.form.get('room_id')
-        checkin = request.form.get('checkin')
-        checkout = request.form.get('checkout')
-
-        if not customer_id or not room_id or not checkin or not checkout:
-            flash("All fields are required", "danger")
-            return redirect(url_for('add_booking'))
-
-        # Check if room is available (optional, but recommended)
-        room = Room.query.get(room_id)
-        if room.status != 'Available':
-            flash("Room is not available", "danger")
-            return redirect(url_for('add_booking'))
-
-        # Create booking
-        new_booking = Booking(
-<<<<<<< HEAD
-            customer_id=customer_id,
-            room_id=room_id,
-=======
-            customer_id=int(customer_id),
-            room_id=int(room_id),
->>>>>>> 144cd83c3279035aae150e1786786b6ea0763966
-            checkin=checkin,
-            checkout=checkout
-        )
-        # Mark room as booked or update status (optional)
-        room.status = 'Booked'
-
-        db.session.add(new_booking)
-        db.session.commit()
-        flash("Booking added successfully!", "success")
-        return redirect(url_for('bookings'))
-
-<<<<<<< HEAD
-    # GET: show form with customers and available rooms
-    customers = Customer.query.all()
-    rooms = Room.query.filter(Room.status == 'Available').all()
-    return render_template('add_booking.html', customers=customers, rooms=rooms)
-=======
-    # GET request: show all bookings
-    all_bookings = Booking.query.order_by(Booking.id.desc()).all()
-    customers = Customer.query.all()
-    rooms = Room.query.all()
-    return render_template('bookings.html',
-                           bookings=all_bookings,
-                           customers=customers,
-                           rooms=rooms)
-=======
-    all_bookings = Booking.query.order_by(Booking.id.desc()).all()
-    customers = Customer.query.all()
-    rooms = Room.query.all()
-    return render_template('bookings.html', 
-                           bookings=all_bookings, 
-                           customers=customers, 
-                           rooms=rooms,
-                           view_type="list")
-
-
-@app.route('/bookings/add', methods=['GET', 'POST'])
-def add_booking():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
-
-    if request.method == 'POST':
-        customer_id = request.form['customer_id']
-        room_id = request.form['room_id']
+        customer_id = int(request.form['customer_id'])
+        room_id = int(request.form['room_id'])
         checkin = request.form['checkin']
         checkout = request.form['checkout']
 
-        new_booking = Booking(customer_id=customer_id, 
-                              room_id=room_id, 
-                              checkin=checkin, 
-                              checkout=checkout)
-        db.session.add(new_booking)
-        db.session.commit()
+        # Create new booking
+        booking = Booking(customer_id=customer_id, room_id=room_id,
+                          checkin=checkin, checkout=checkout)
+        db.session.add(booking)
 
+        # Update room status
+        room = Room.query.get(room_id)
+        room.status = 'Booked'
+
+        db.session.commit()
         flash("Booking added successfully", "success")
         return redirect(url_for('bookings'))
 
-    customers = Customer.query.all()
-    rooms = Room.query.all()
-    return render_template('bookings.html', view_type="add", customers=customers, rooms=rooms)
->>>>>>> e001c0388bb89bd89558d4debc84f49f622ca41e
->>>>>>> 144cd83c3279035aae150e1786786b6ea0763966
-
-
-@app.route('/bookings/edit/<int:id>', methods=['GET', 'POST'])
-def edit_booking(id):
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
-
-    booking = Booking.query.get_or_404(id)
-
-    if request.method == 'POST':
-<<<<<<< HEAD
-        booking.customer_id = request.form.get('customer_id')
-        booking.room_id = request.form.get('room_id')
-=======
-<<<<<<< HEAD
-        booking.customer_id = int(request.form.get('customer_id'))
-        booking.room_id = int(request.form.get('room_id'))
->>>>>>> 144cd83c3279035aae150e1786786b6ea0763966
-        booking.checkin = request.form.get('checkin')
-        booking.checkout = request.form.get('checkout')
-
-        db.session.commit()
-        flash("Booking updated successfully!", "success")
-        return redirect(url_for('bookings'))
-
-    # GET: show all bookings + edit form
+    # Display all bookings
     all_bookings = Booking.query.order_by(Booking.id.desc()).all()
-    customers = Customer.query.all()
-    rooms = Room.query.all()
-    return render_template('bookings.html',
-                           bookings=all_bookings,
-                           edit_booking=booking,
-                           customers=customers,
-=======
-        booking.customer_id = request.form['customer_id']
-        booking.room_id = request.form['room_id']
-        booking.checkin = request.form['checkin']
-        booking.checkout = request.form['checkout']
+    return render_template('bookings.html', bookings=all_bookings,
+                           customers=customers, rooms=rooms)
 
-        db.session.commit()
-        flash("Booking updated successfully", "success")
-        return redirect(url_for('bookings'))
-
-    customers = Customer.query.all()
-    rooms = Room.query.all()
-<<<<<<< HEAD
-    return render_template('edit_booking.html', booking=booking, customers=customers, rooms=rooms)
-=======
-    return render_template('bookings.html', 
-                           view_type="edit", 
-                           booking=booking, 
-                           customers=customers, 
->>>>>>> e001c0388bb89bd89558d4debc84f49f622ca41e
-                           rooms=rooms)
->>>>>>> 144cd83c3279035aae150e1786786b6ea0763966
-
-
-@app.route('/bookings/delete/<int:id>', methods=['POST'])
-def delete_booking(id):
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
-
+@app.route('/bookings/cancel/<int:id>')
+def cancel_booking(id):
     booking = Booking.query.get_or_404(id)
-<<<<<<< HEAD
-    # Optionally, mark room as available again
-    room = Room.query.get(booking.room_id)
-    if room:
-        room.status = 'Available'
 
-=======
->>>>>>> 144cd83c3279035aae150e1786786b6ea0763966
+    # Free the room
+    room = Room.query.get(booking.room_id)
+    room.status = 'Available'
+
+    # Delete the booking
     db.session.delete(booking)
     db.session.commit()
-<<<<<<< HEAD
-    flash("Booking deleted successfully!", "success")
-    return redirect(url_for('bookings'))
-<<<<<<< HEAD
-=======
-=======
-    flash("Booking deleted successfully", "success")
+    flash("Booking cancelled successfully", "success")
     return redirect(url_for('bookings'))
 
->>>>>>> e001c0388bb89bd89558d4debc84f49f622ca41e
 
->>>>>>> 144cd83c3279035aae150e1786786b6ea0763966
 # ----------------- ROOMS MODULE -----------------
 
 @app.route('/rooms')
