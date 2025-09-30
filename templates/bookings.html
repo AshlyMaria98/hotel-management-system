@@ -2,79 +2,78 @@
 <html>
 <head>
     <title>Bookings</title>
+    <style>
+        table, th, td { border: 1px solid black; border-collapse: collapse; padding: 5px; }
+        th { background-color: #f2f2f2; }
+        form { margin-bottom: 20px; }
+    </style>
 </head>
 <body>
 <h2>Bookings</h2>
 
-<!-- Add / Edit Form -->
-<form method="POST" action="{{ url_for('bookings') if not edit_booking else url_for('edit_booking', id=edit_booking.id) }}">
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul>
+      {% for category, message in messages %}
+        <li style="color: {% if category == 'success' %}green{% else %}red{% endif %};">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<!-- Add / Edit Booking Form -->
+<form method="POST" 
+      action="{% if edit_booking %}{{ url_for('edit_booking', id=edit_booking.id) }}{% else %}{{ url_for('bookings') }}{% endif %}">
     <label>Customer:</label>
     <select name="customer_id" required>
+        <option value="">--Select Customer--</option>
         {% for c in customers %}
         <option value="{{ c.id }}" {% if edit_booking and edit_booking.customer_id == c.id %}selected{% endif %}>
             {{ c.name }}
         </option>
         {% endfor %}
-    </select><br>
+    </select><br><br>
 
     <label>Room:</label>
     <select name="room_id" required>
+        <option value="">--Select Room--</option>
         {% for r in rooms %}
         <option value="{{ r.id }}" {% if edit_booking and edit_booking.room_id == r.id %}selected{% endif %}>
             Room {{ r.room_no }} ({{ r.type }})
         </option>
         {% endfor %}
-    </select><br>
+    </select><br><br>
 
     <label>Check-in:</label>
-    <input type="date" name="check_in" value="{{ edit_booking.check_in if edit_booking else '' }}" required><br>
+    <input type="date" name="checkin" value="{% if edit_booking %}{{ edit_booking.checkin }}{% endif %}" required><br><br>
 
     <label>Check-out:</label>
-    <input type="date" name="check_out" value="{{ edit_booking.check_out if edit_booking else '' }}" required><br>
+    <input type="date" name="checkout" value="{% if edit_booking %}{{ edit_booking.checkout }}{% endif %}" required><br><br>
 
-    {% if edit_booking %}
-        <label>Status:</label>
-        <select name="status">
-            <option value="booked" {% if edit_booking.status == "booked" %}selected{% endif %}>Booked</option>
-            <option value="checked_in" {% if edit_booking.status == "checked_in" %}selected{% endif %}>Checked In</option>
-            <option value="checked_out" {% if edit_booking.status == "checked_out" %}selected{% endif %}>Checked Out</option>
-            <option value="canceled" {% if edit_booking.status == "canceled" %}selected{% endif %}>Canceled</option>
-        </select><br>
-    {% endif %}
-
-    <button type="submit">{{ "Update Booking" if edit_booking else "Add Booking" }}</button>
+    <button type="submit">{% if edit_booking %}Update Booking{% else %}Add Booking{% endif %}</button>
 </form>
 
-<hr>
-
-<!-- Bookings List -->
-<table border="1" cellpadding="5">
+<!-- Bookings Table -->
+<h3>All Bookings</h3>
+<table>
     <tr>
         <th>ID</th>
         <th>Customer</th>
         <th>Room</th>
         <th>Check-in</th>
         <th>Check-out</th>
-        <th>Status</th>
         <th>Actions</th>
     </tr>
     {% for b in bookings %}
     <tr>
         <td>{{ b.id }}</td>
-        <td>{{ b.customer.name }}</td>
-        <td>Room {{ b.room.room_no }} ({{ b.room.type }})</td>
-        <td>{{ b.check_in }}</td>
-        <td>{{ b.check_out }}</td>
-        <td>{{ b.status }}</td>
+        <td>{{ b.customer.name if b.customer else 'N/A' }}</td>
+        <td>{{ b.room.room_no if b.room else 'N/A' }}</td>
+        <td>{{ b.checkin }}</td>
+        <td>{{ b.checkout }}</td>
         <td>
-            <a href="{{ url_for('edit_booking', id=b.id) }}">Edit</a>
+            <a href="{{ url_for('edit_booking', id=b.id) }}">Edit</a> |
             <form method="POST" action="{{ url_for('delete_booking', id=b.id) }}" style="display:inline;">
-                <button type="submit" onclick="return confirm('Delete booking?')">Delete</button>
-            </form>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
-
-</body>
-</html>
+                <button type="submit" onclick="return confirm('Are you sure you want to delete this booking?');">Delete</button>
+            </f
