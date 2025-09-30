@@ -131,11 +131,17 @@ def delete_customer(id):
 
 
 # ----------------- BOOKINGS MODULE -----------------
+<<<<<<< HEAD
 @app.route('/bookings', methods=['GET', 'POST'])
+=======
+# ----------------- BOOKINGS MODULE -----------------
+@app.route('/bookings')
+>>>>>>> e001c0388bb89bd89558d4debc84f49f622ca41e
 def bookings():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
 
+<<<<<<< HEAD
     if request.method == 'POST':
         customer_id = request.form.get('customer_id')
         room_id = request.form.get('room_id')
@@ -165,6 +171,42 @@ def bookings():
                            bookings=all_bookings,
                            customers=customers,
                            rooms=rooms)
+=======
+    all_bookings = Booking.query.order_by(Booking.id.desc()).all()
+    customers = Customer.query.all()
+    rooms = Room.query.all()
+    return render_template('bookings.html', 
+                           bookings=all_bookings, 
+                           customers=customers, 
+                           rooms=rooms,
+                           view_type="list")
+
+
+@app.route('/bookings/add', methods=['GET', 'POST'])
+def add_booking():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        customer_id = request.form['customer_id']
+        room_id = request.form['room_id']
+        checkin = request.form['checkin']
+        checkout = request.form['checkout']
+
+        new_booking = Booking(customer_id=customer_id, 
+                              room_id=room_id, 
+                              checkin=checkin, 
+                              checkout=checkout)
+        db.session.add(new_booking)
+        db.session.commit()
+
+        flash("Booking added successfully", "success")
+        return redirect(url_for('bookings'))
+
+    customers = Customer.query.all()
+    rooms = Room.query.all()
+    return render_template('bookings.html', view_type="add", customers=customers, rooms=rooms)
+>>>>>>> e001c0388bb89bd89558d4debc84f49f622ca41e
 
 
 @app.route('/bookings/edit/<int:id>', methods=['GET', 'POST'])
@@ -175,6 +217,7 @@ def edit_booking(id):
     booking = Booking.query.get_or_404(id)
 
     if request.method == 'POST':
+<<<<<<< HEAD
         booking.customer_id = int(request.form.get('customer_id'))
         booking.room_id = int(request.form.get('room_id'))
         booking.checkin = request.form.get('checkin')
@@ -192,6 +235,23 @@ def edit_booking(id):
                            bookings=all_bookings,
                            edit_booking=booking,
                            customers=customers,
+=======
+        booking.customer_id = request.form['customer_id']
+        booking.room_id = request.form['room_id']
+        booking.checkin = request.form['checkin']
+        booking.checkout = request.form['checkout']
+
+        db.session.commit()
+        flash("Booking updated successfully", "success")
+        return redirect(url_for('bookings'))
+
+    customers = Customer.query.all()
+    rooms = Room.query.all()
+    return render_template('bookings.html', 
+                           view_type="edit", 
+                           booking=booking, 
+                           customers=customers, 
+>>>>>>> e001c0388bb89bd89558d4debc84f49f622ca41e
                            rooms=rooms)
 
 
@@ -203,8 +263,14 @@ def delete_booking(id):
     booking = Booking.query.get_or_404(id)
     db.session.delete(booking)
     db.session.commit()
+<<<<<<< HEAD
     flash("Booking deleted successfully!", "success")
     return redirect(url_for('bookings'))
+=======
+    flash("Booking deleted successfully", "success")
+    return redirect(url_for('bookings'))
+
+>>>>>>> e001c0388bb89bd89558d4debc84f49f622ca41e
 
 # ----------------- ROOMS MODULE -----------------
 
