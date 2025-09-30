@@ -212,7 +212,6 @@ def delete_booking(id):
     return redirect(url_for('bookings'))
 
 # ----------------- BOOKINGS MODULE -----------------
-
 @app.route('/bookings')
 def bookings():
     if not session.get('logged_in'):

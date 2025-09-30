@@ -1,197 +1,84 @@
-<<<<<<< HEAD
-{% extends "base.html" %}
-{% block content %}
-<div class="container">
-    <h2>Bookings</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bookings</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Bookings Management</h1>
 
-    <!-- Add Booking Form -->
-    <div class="card mb-4">
-        <div class="card-header">Add New Booking</div>
-        <div class="card-body">
-            <form method="POST" action="{{ url_for('add_booking') }}">
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label>Customer</label>
-                        <select name="customer_id" class="form-control" required>
-                            <option value="">Select Customer</option>
-                            {% for customer in customers %}
-                                <option value="{{ customer.id }}">{{ customer.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label>Room</label>
-                        <select name="room_id" class="form-control" required>
-                            <option value="">Select Room</option>
-                            {% for room in rooms %}
-                                <option value="{{ room.id }}">{{ room.room_no }} ({{ room.type }})</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label>Check-in</label>
-                        <input type="date" name="checkin" class="form-control" required>
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label>Check-out</label>
-                        <input type="date" name="checkout" class="form-control" required>
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary">Add Booking</button>
-            </form>
-        </div>
-    </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul>
+            {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
 
-    <!-- Edit Booking Form (Optional) -->
-    {% if edit_booking %}
-    <div class="card mb-4">
-        <div class="card-header">Edit Booking ID #{{ edit_booking.id }}</div>
-        <div class="card-body">
-            <form method="POST" action="{{ url_for('edit_booking', id=edit_booking.id) }}">
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label>Customer</label>
-                        <select name="customer_id" class="form-control" required>
-                            {% for customer in customers %}
-                                <option value="{{ customer.id }}" {% if edit_booking.customer_id == customer.id %}selected{% endif %}>{{ customer.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label>Room</label>
-                        <select name="room_id" class="form-control" required>
-                            {% for room in rooms %}
-                                <option value="{{ room.id }}" {% if edit_booking.room_id == room.id %}selected{% endif %}>{{ room.room_no }} ({{ room.type }})</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label>Check-in</label>
-                        <input type="date" name="checkin" class="form-control" value="{{ edit_booking.checkin }}" required>
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label>Check-out</label>
-                        <input type="date" name="checkout" class="form-control" value="{{ edit_booking.checkout }}" required>
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-success">Update Booking</button>
-                <a href="{{ url_for('bookings') }}" class="btn btn-secondary">Cancel</a>
-            </form>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- List Bookings -->
-    <table class="table table-bordered table-striped">
-        <thead>
+    {% if view_type == 'list' %}
+        <a href="{{ url_for('add_booking') }}">Add New Booking</a>
+        <table border="1" cellpadding="8" cellspacing="0">
             <tr>
                 <th>ID</th>
                 <th>Customer</th>
                 <th>Room</th>
-                <th>Check-in</th>
-                <th>Check-out</th>
+                <th>Check-In</th>
+                <th>Check-Out</th>
                 <th>Actions</th>
             </tr>
-        </thead>
-        <tbody>
-            {% for b in bookings %}
+            {% for booking in bookings %}
             <tr>
-                <td>{{ b.id }}</td>
-                <td>{{ b.customer.name }}</td>
-                <td>{{ b.room.room_no }} ({{ b.room.type }})</td>
-                <td>{{ b.checkin }}</td>
-                <td>{{ b.checkout }}</td>
+                <td>{{ booking.id }}</td>
+                <td>{{ booking.customer.name }}</td>
+                <td>{{ booking.room.room_no }}</td>
+                <td>{{ booking.checkin }}</td>
+                <td>{{ booking.checkout }}</td>
                 <td>
-                    <a href="{{ url_for('edit_booking', id=b.id) }}" class="btn btn-sm btn-warning">Edit</a>
-                    <form method="POST" action="{{ url_for('delete_booking', id=b.id) }}" style="display:inline;">
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this booking?')">Delete</button>
+                    <a href="{{ url_for('edit_booking', id=booking.id) }}">Edit</a>
+                    <form action="{{ url_for('delete_booking', id=booking.id) }}" method="POST" style="display:inline;">
+                        <button type="submit" onclick="return confirm('Are you sure you want to delete this booking?')">Delete</button>
                     </form>
                 </td>
             </tr>
             {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% endblock %}
-=======
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Bookings</title>
-</head>
-<body>
-<h2>Bookings</h2>
+        </table>
+    {% elif view_type == 'add' or view_type == 'edit' %}
+        <h2>{{ 'Edit Booking' if view_type == 'edit' else 'Add New Booking' }}</h2>
+        <form method="POST">
+            <label for="customer_id">Customer:</label>
+            <select name="customer_id" required>
+                {% for customer in customers %}
+                    <option value="{{ customer.id }}"
+                        {% if view_type == 'edit' and customer.id == booking.customer_id %}selected{% endif %}>
+                        {{ customer.name }}
+                    </option>
+                {% endfor %}
+            </select><br><br>
 
-<!-- Add / Edit Form -->
-<form method="POST" action="{{ url_for('bookings') if not edit_booking else url_for('edit_booking', id=edit_booking.id) }}">
-    <label>Customer:</label>
-    <select name="customer_id" required>
-        {% for c in customers %}
-        <option value="{{ c.id }}" {% if edit_booking and edit_booking.customer_id == c.id %}selected{% endif %}>
-            {{ c.name }}
-        </option>
-        {% endfor %}
-    </select><br>
+            <label for="room_id">Room:</label>
+            <select name="room_id" required>
+                {% for room in rooms %}
+                    <option value="{{ room.id }}"
+                        {% if view_type == 'edit' and room.id == booking.room_id %}selected{% endif %}>
+                        {{ room.room_no }}
+                    </option>
+                {% endfor %}
+            </select><br><br>
 
-    <label>Room:</label>
-    <select name="room_id" required>
-        {% for r in rooms %}
-        <option value="{{ r.id }}" {% if edit_booking and edit_booking.room_id == r.id %}selected{% endif %}>
-            Room {{ r.room_no }} ({{ r.type }})
-        </option>
-        {% endfor %}
-    </select><br>
+            <label for="checkin">Check-In Date:</label>
+            <input type="date" name="checkin" required
+                   value="{{ booking.checkin if view_type == 'edit' else '' }}"><br><br>
 
-    <label>Check-in:</label>
-    <input type="date" name="check_in" value="{{ edit_booking.check_in if edit_booking else '' }}" required><br>
+            <label for="checkout">Check-Out Date:</label>
+            <input type="date" name="checkout" required
+                   value="{{ booking.checkout if view_type == 'edit' else '' }}"><br><br>
 
-    <label>Check-out:</label>
-    <input type="date" name="check_out" value="{{ edit_booking.check_out if edit_booking else '' }}" required><br>
-
-    {% if edit_booking %}
-        <label>Status:</label>
-        <select name="status">
-            <option value="booked" {% if edit_booking.status == "booked" %}selected{% endif %}>Booked</option>
-            <option value="checked_in" {% if edit_booking.status == "checked_in" %}selected{% endif %}>Checked In</option>
-            <option value="checked_out" {% if edit_booking.status == "checked_out" %}selected{% endif %}>Checked Out</option>
-            <option value="canceled" {% if edit_booking.status == "canceled" %}selected{% endif %}>Canceled</option>
-        </select><br>
+            <button type="submit">{{ 'Update Booking' if view_type == 'edit' else 'Add Booking' }}</button>
+            <a href="{{ url_for('bookings') }}">Cancel</a>
+        </form>
     {% endif %}
-
-    <button type="submit">{{ "Update Booking" if edit_booking else "Add Booking" }}</button>
-</form>
-
-<hr>
-
-<!-- Bookings List -->
-<table border="1" cellpadding="5">
-    <tr>
-        <th>ID</th>
-        <th>Customer</th>
-        <th>Room</th>
-        <th>Check-in</th>
-        <th>Check-out</th>
-        <th>Status</th>
-        <th>Actions</th>
-    </tr>
-    {% for b in bookings %}
-    <tr>
-        <td>{{ b.id }}</td>
-        <td>{{ b.customer.name }}</td>
-        <td>Room {{ b.room.room_no }} ({{ b.room.type }})</td>
-        <td>{{ b.check_in }}</td>
-        <td>{{ b.check_out }}</td>
-        <td>{{ b.status }}</td>
-        <td>
-            <a href="{{ url_for('edit_booking', id=b.id) }}">Edit</a>
-            <form method="POST" action="{{ url_for('delete_booking', id=b.id) }}" style="display:inline;">
-                <button type="submit" onclick="return confirm('Delete booking?')">Delete</button>
-            </form>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
-
 </body>
 </html>
->>>>>>> 2488b5c3d6736afcda4e16e4b4b4e7547d35b067
