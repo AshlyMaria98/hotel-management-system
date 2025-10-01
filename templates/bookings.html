@@ -1,6 +1,265 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block content %}
-<h2>Bookings</h2>
-<p>This is the Bookings page. Add booking forms here.</p>
+<style>
+  /* Container */
+  .container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  h2, h3 {
+    color: #333;
+    margin-bottom: 1rem;
+  }
+
+  /* Flash messages */
+  .flash {
+    padding: 12px 20px;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+  .flash.success {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  .flash.danger {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+
+  /* Form styling */
+  form {
+    background-color: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+    color: #555;
+  }
+
+  select, input[type="date"] {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+
+  select:focus, input[type="date"]:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+
+  button {
+    background-color: #007bff;
+    color: white;
+    font-weight: 700;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #0056b3;
+  }
+
+  a.cancel-btn {
+    margin-left: 1rem;
+    color: #555;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  a.cancel-btn:hover {
+    text-decoration: underline;
+  }
+
+  /* Responsive Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  }
+
+  th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+
+  th {
+    background-color: #007bff;
+    color: white;
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f2f6fc;
+  }
+
+  /* Action buttons */
+  .actions a,
+  .actions form button {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    margin-right: 5px;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .actions a {
+    background-color: #28a745;
+    color: white;
+  }
+
+  .actions a:hover {
+    background-color: #1e7e34;
+  }
+
+  .actions form button {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  .actions form button:hover {
+    background-color: #bd2130;
+  }
+
+  /* Small screens */
+  @media (max-width: 600px) {
+    table, thead, tbody, th, td, tr {
+      display: block;
+    }
+    th {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+    }
+    tr {
+      border: 1px solid #ccc;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    td {
+      border: none;
+      position: relative;
+      padding-left: 50%;
+      text-align: right;
+    }
+    td::before {
+      position: absolute;
+      left: 15px;
+      width: 45%;
+      padding-right: 10px;
+      white-space: nowrap;
+      font-weight: 600;
+      text-align: left;
+      content: attr(data-label);
+    }
+    .actions {
+      text-align: center;
+      margin-top: 10px;
+    }
+  }
+</style>
+
+<div class="container">
+
+  <h2>{{ "Edit Booking" if edit_booking else "Add New Booking" }}</h2>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        <div class="flash {{ category }}">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form method="POST" action="{{ url_for('bookings') if not edit_booking else url_for('edit_booking', id=edit_booking.id) }}">
+    
+    <label for="customer_id">Customer</label>
+    <select name="customer_id" id="customer_id" required>
+      <option value="">Select Customer</option>
+      {% for customer in customers %}
+        <option value="{{ customer.id }}" {% if edit_booking and customer.id == edit_booking.customer_id %}selected{% endif %}>{{ customer.name }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="room_id">Room</label>
+    <select name="room_id" id="room_id" required>
+      <option value="">Select Room</option>
+      {% for room in rooms %}
+        <option value="{{ room.id }}" {% if edit_booking and room.id == edit_booking.room_id %}selected{% endif %}>
+          {{ room.room_no }} ({{ room.type }})
+        </option>
+      {% endfor %}
+    </select>
+
+    <label for="checkin">Check-in Date</label>
+    <input type="date" name="checkin" id="checkin" value="{{ edit_booking.checkin if edit_booking else '' }}" required>
+
+    <label for="checkout">Check-out Date</label>
+    <input type="date" name="checkout" id="checkout" value="{{ edit_booking.checkout if edit_booking else '' }}" required>
+
+    <button type="submit">{{ "Update Booking" if edit_booking else "Add Booking" }}</button>
+    {% if edit_booking %}
+      <a href="{{ url_for('bookings') }}" class="cancel-btn">Cancel</a>
+    {% endif %}
+  </form>
+
+  <h3>All Bookings</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Customer</th>
+        <th>Room</th>
+        <th>Check-in</th>
+        <th>Check-out</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in bookings %}
+      <tr>
+        <td data-label="ID">{{ b.id }}</td>
+        <td data-label="Customer">{{ b.customer.name if b.customer else "N/A" }}</td>
+        <td data-label="Room">{{ b.room.room_no if b.room else "N/A" }}</td>
+        <td data-label="Check-in">{{ b.checkin }}</td>
+        <td data-label="Check-out">{{ b.checkout }}</td>
+        <td data-label="Actions" class="actions">
+          <a href="{{ url_for('edit_booking', id=b.id) }}">Edit</a>
+          <form method="POST" action="{{ url_for('delete_booking', id=b.id) }}" style="display:inline;">
+            <button type="submit" onclick="return confirm('Delete this booking?')">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="6" style="text-align:center;">No bookings found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
 {% endblock %}
