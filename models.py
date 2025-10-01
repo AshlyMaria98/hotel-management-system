@@ -23,6 +23,10 @@ class Booking(db.Model):
     checkin = db.Column(db.String(20))
     checkout = db.Column(db.String(20))
 
+    customer = db.relationship("Customer", backref="bookings")
+    room = db.relationship("Room", backref="bookings")
+
+
 class Payment(db.Model):
     __tablename__ = 'payments'
     id = db.Column(db.Integer, primary_key=True)

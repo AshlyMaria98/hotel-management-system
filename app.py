@@ -130,9 +130,74 @@ def delete_customer(id):
 
 
 # ----------------- BOOKINGS MODULE -----------------
-@app.route('/bookings')
+# ----------------- BOOKINGS MODULE -----------------
+
+@app.route('/bookings', methods=['GET', 'POST'])
 def bookings():
-    return render_template('bookings.html')
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        customer_id = request.form['customer_id']
+        room_id = request.form['room_id']
+        checkin = request.form['checkin']
+        checkout = request.form['checkout']
+
+        # Optional: Validate dates and input
+        if not customer_id or not room_id or not checkin or not checkout:
+            flash("All fields are required", "danger")
+            return redirect(url_for('bookings'))
+
+        new_booking = Booking(
+            customer_id=customer_id,
+            room_id=room_id,
+            checkin=checkin,
+            checkout=checkout
+        )
+        db.session.add(new_booking)
+        db.session.commit()
+        flash("Booking added", "success")
+        return redirect(url_for('bookings'))
+
+    all_bookings = Booking.query.order_by(Booking.id.desc()).all()
+    customers = Customer.query.all()
+    rooms = Room.query.all()
+    return render_template('bookings.html', bookings=all_bookings, customers=customers, rooms=rooms)
+
+
+@app.route('/bookings/edit/<int:id>', methods=['GET', 'POST'])
+def edit_booking(id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    booking = Booking.query.get_or_404(id)
+    customers = Customer.query.all()
+    rooms = Room.query.all()
+
+    if request.method == 'POST':
+        booking.customer_id = request.form['customer_id']
+        booking.room_id = request.form['room_id']
+        booking.checkin = request.form['checkin']
+        booking.checkout = request.form['checkout']
+
+        db.session.commit()
+        flash("Booking updated", "success")
+        return redirect(url_for('bookings'))
+
+    return render_template('bookings.html', edit_booking=booking, bookings=Booking.query.all(), customers=customers, rooms=rooms)
+
+
+@app.route('/bookings/delete/<int:id>', methods=['POST'])
+def delete_booking(id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    booking = Booking.query.get_or_404(id)
+    db.session.delete(booking)
+    db.session.commit()
+    flash("Booking deleted", "success")
+    return redirect(url_for('bookings'))
+
 
 # ----------------- ROOMS MODULE -----------------
 
