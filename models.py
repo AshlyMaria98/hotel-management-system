@@ -31,6 +31,19 @@ class Payment(db.Model):
     __tablename__ = 'payments'
     id = db.Column(db.Integer, primary_key=True)
     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
+
+    # Optional columns for auto-fill
+    customer_id = db.Column(db.Integer)       # just store the ID
+    customer_name = db.Column(db.String(100))
+    room_no = db.Column(db.String(10))
+    days = db.Column(db.Integer)
+    food = db.Column(db.Float)
+
     amount = db.Column(db.Float)
-    payment_method = db.Column(db.String(50))
     date = db.Column(db.String(20))
+    payment_method = db.Column(db.String(50))
+
+    # Relationship to Booking (safe, does not affect Booking module)
+    booking = db.relationship("Booking", backref="payments")
+
+
