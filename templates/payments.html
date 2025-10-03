@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payments</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background: #eee; }
+        form { margin: 20px 0; }
+        input, select { padding: 5px; margin: 5px; }
+        button { padding: 5px 10px; }
+        a { text-decoration: none; padding: 5px 10px; background: #007bff; color: #fff; border-radius: 4px; }
+        a:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+
+{% if view_type == 'payments' %}
+    <h2>All Payments</h2>
+    <a href="{{ url_for('add_payment') }}">➕ Add Payment</a>
+    <table>
+        <tr>
+            <th>ID</th><th>Customer</th><th>Room</th><th>Amount</th><th>Date</th><th>Mode</th><th>Actions</th>
+        </tr>
+        {% for p in payments %}
+        <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ p.customer_name }}</td>
+            <td>{{ p.room_no }}</td>
+            <td>{{ p.amount }}</td>
+            <td>{{ p.date }}</td>
+            <td>{{ p.payment_method }}</td>
+            <td>
+                <a href="{{ url_for('edit_payment', id=p.id) }}">✏️ Edit</a>
+                <a href="{{ url_for('delete_payment', id=p.id) }}">🗑️ Delete</a>
+                <a href="{{ url_for('bill', id=p.id) }}">📄 Bill</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+{% elif view_type == 'add' %}
+    <h2>Add Payment</h2>
+    <form method="POST">
+        <label>Select Booking:</label>
+        <select name="booking_id" required>
+            {% for b in bookings %}
+                <option value="{{ b.id }}">{{ b.customer.name }} - Room {{ b.room.room_no }} ({{ b.checkin }} to {{ b.checkout }})</option>
+            {% endfor %}
+        </select><br>
+        <label>Date:</label>
+        <input name="date" type="date" required><br>
+        <label>Payment Mode:</label>
+        <select name="mode" required>
+            <option>Cash</option>
+            <option>Card</option>
+            <option>UPI</option>
+        </select><br>
+        <button type="submit">Save</button>
+    </form>
+
+{% elif view_type == 'edit' %}
+    <h2>Edit Payment</h2>
+    <form method="POST">
+        <label>Select Booking:</label>
+        <select name="booking_id" required>
+            {% for b in bookings %}
+                <option value="{{ b.id }}" {% if payment.booking_id == b.id %}selected{% endif %}>
+                    {{ b.customer.name }} - Room {{ b.room.room_no }} ({{ b.checkin }} to {{ b.checkout }})
+                </option>
+            {% endfor %}
+        </select><br>
+        <label>Date:</label>
+        <input name="date" type="date" value="{{ payment.date }}" required><br>
+        <label>Payment Mode:</label>
+        <select name="mode" required>
+            <option {% if payment.payment_method=='Cash' %}selected{% endif %}>Cash</option>
+            <option {% if payment.payment_method=='Card' %}selected{% endif %}>Card</option>
+            <option {% if payment.payment_method=='UPI' %}selected{% endif %}>UPI</option>
+        </select><br>
+        <button type="submit">Update</button>
+    </form>
+
+{% elif view_type == 'delete' %}
+    <h2>Delete Payment</h2>
+    <p>Are you sure you want to delete payment of <b>{{ payment.customer_name }}</b> (ID: {{ payment.id }})?</p>
+    <form method="POST">
+        <button type="submit">Yes, Delete</button>
+        <a href="{{ url_for('payments') }}">Cancel</a>
+    </form>
+
+{% elif view_type == 'bill' %}
+    <h2>Bill Receipt</h2>
+    <p><b>Payment ID:</b> {{ payment.id }}</p>
+    <p><b>Customer:</b> {{ payment.customer_name }}</p>
+    <p><b>Room No:</b> {{ payment.room_no }}</p>
+    <p><b>Days:</b> {{ payment.days }}</p>
+    <p><b>Food Charges:</b> {{ payment.food }}</p>
+    <p><b>Total Amount:</b> {{ payment.amount }}</p>
+    <p><b>Date:</b> {{ payment.date }}</p>
+    <p><b>Mode:</b> {{ payment.payment_method }}</p>
+    <a href="{{ url_for('payments') }}">⬅ Back</a>
+{% endif %}
+
+</body>
+</html>
