@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
+    {% if request.endpoint != 'login' %}
     <header>
         <h1>Hotel Management System</h1>
         {% if session.get('logged_in') %}
@@ -19,6 +20,7 @@
         </nav>
         {% endif %}
     </header>
+    {% endif %}
 
     <main>
         {% block content %}{% endblock %}

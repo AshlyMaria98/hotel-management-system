@@ -1,64 +1,160 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block content %}
-<h2>Customers</h2>
+<style>
+  .container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for cat,msg in messages %}
-      <div class="alert alert-{{cat}}">{{ msg }}</div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
+  h2, h3 {
+    color: #333;
+    margin-bottom: 1rem;
+  }
 
-<!-- Add / Edit form -->
-{% if edit_customer %}
-  <h3>Edit customer #{{ edit_customer.id }}</h3>
-{% else %}
-  <h3>Add Customer</h3>
-{% endif %}
+  .flash {
+    padding: 12px 20px;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+  .flash.success { background-color: #d4edda; color: #155724; }
+  .flash.danger { background-color: #f8d7da; color: #721c24; }
 
-<form method="post" action="{% if edit_customer %}{{ url_for('edit_customer', id=edit_customer.id) }}{% else %}{{ url_for('customers') }}{% endif %}" class="customer-form">
-  <label for="name">Name</label>
-  <input id="name" name="name" value="{{ edit_customer.name if edit_customer else '' }}" required>
+  form {
+    background-color: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+  }
 
-  <label for="phone">Phone</label>
-  <input id="phone" name="phone" value="{{ edit_customer.phone if edit_customer else '' }}" required>
+  label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+    color: #555;
+  }
 
-  <label for="email">Email</label>
-  <input id="email" name="email" value="{{ edit_customer.email if edit_customer else '' }}">
+  input[type="text"], input[type="email"], input[type="tel"] {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+  input:focus {
+    border-color: #007bff;
+    outline: none;
+  }
 
-  <label for="address">Address</label>
-  <input id="address" name="address" value="{{ edit_customer.address if edit_customer else '' }}">
+  button {
+    background-color: #007bff;
+    color: white;
+    font-weight: 700;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover { background-color: #0056b3; }
 
-  <button type="submit">{% if edit_customer %}Update{% else %}Add Customer{% endif %}</button>
-  {% if edit_customer %}
-    <a href="{{ url_for('customers') }}">Cancel</a>
-  {% endif %}
-</form>
+  a.cancel-btn {
+    margin-left: 1rem;
+    color: #555;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  a.cancel-btn:hover { text-decoration: underline; }
 
-<hr>
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  }
+  th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  th {
+    background-color: #007bff;
+    color: white;
+    font-weight: 600;
+  }
+  tr:nth-child(even) { background-color: #f2f6fc; }
 
-<h3>All Customers</h3>
-<table class="data-table">
-  <thead>
-    <tr><th>ID</th><th>Name</th><th>Phone</th><th>Email</th><th>Address</th><th>Actions</th></tr>
-  </thead>
-  <tbody>
-    {% for c in customers %}
-    <tr>
-      <td>{{ c.id }}</td>
-      <td>{{ c.name }}</td>
-      <td>{{ c.phone }}</td>
-      <td>{{ c.email }}</td>
-      <td>{{ c.address }}</td>
-      <td>
-        <a href="{{ url_for('edit_customer', id=c.id) }}">Edit</a>
-        <form method="post" action="{{ url_for('delete_customer', id=c.id) }}" style="display:inline;" onsubmit="return confirm('Delete this customer?');">
-          <button type="submit">Delete</button>
-        </form>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+ 
+
+  @media (max-width: 600px) {
+    table, thead, tbody, th, td, tr { display: block; }
+    th { position: absolute; top: -9999px; left: -9999px; }
+    tr { border: 1px solid #ccc; margin-bottom: 1rem; border-radius: 8px; padding: 1rem; }
+    td { border: none; position: relative; padding-left: 50%; text-align: right; }
+    td::before { position: absolute; left: 15px; width: 45%; padding-right: 10px; white-space: nowrap; font-weight: 600; text-align: left; content: attr(data-label); }
+    .actions { text-align: center; margin-top: 10px; }
+  }
+</style>
+
+<div class="container">
+  <h2>Customers</h2>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        <div class="flash {{ category }}">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <h3>{{ "Edit Customer #" ~ edit_customer.id if edit_customer else "Add Customer" }}</h3>
+
+  <form method="post" action="{{ url_for('edit_customer', id=edit_customer.id) if edit_customer else url_for('customers') }}">
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" value="{{ edit_customer.name if edit_customer else '' }}" required>
+
+    <label for="phone">Phone</label>
+    <input type="tel" id="phone" name="phone" value="{{ edit_customer.phone if edit_customer else '' }}" required>
+
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" value="{{ edit_customer.email if edit_customer else '' }}">
+
+    <label for="address">Address</label>
+    <input type="text" id="address" name="address" value="{{ edit_customer.address if edit_customer else '' }}">
+
+    <button type="submit">{{ "Update" if edit_customer else "Add Customer" }}</button>
+    {% if edit_customer %}
+      <a href="{{ url_for('customers') }}" class="cancel-btn">Cancel</a>
+    {% endif %}
+  </form>
+
+  <h3>All Customers</h3>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Name</th><th>Phone</th><th>Email</th><th>Address</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for c in customers %}
+      <tr>
+        <td data-label="ID">{{ c.id }}</td>
+        <td data-label="Name">{{ c.name }}</td>
+        <td data-label="Phone">{{ c.phone }}</td>
+        <td data-label="Email">{{ c.email }}</td>
+        <td data-label="Address">{{ c.address }}</td>
+        <td data-label="Actions" class="actions">
+          <a href="{{ url_for('edit_customer', id=c.id) }}" class="edit-btn">Edit</a>
+          <form method="post" action="{{ url_for('delete_customer', id=c.id) }}" style="display:inline;" onsubmit="return confirm('Delete this customer?');">
+          <button type="submit" class="delete-btn">Delete</button>
+          </form>
+        </td>
+
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}
