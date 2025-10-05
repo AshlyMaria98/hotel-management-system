@@ -199,7 +199,6 @@ def edit_booking(id):
 
     return render_template('bookings.html', edit_booking=booking, bookings=Booking.query.all(), customers=customers, rooms=rooms)
 
-
 @app.route('/bookings/delete/<int:id>', methods=['POST'])
 def delete_booking(id):
     if not session.get('logged_in'):
@@ -207,15 +206,22 @@ def delete_booking(id):
 
     booking = Booking.query.get_or_404(id)
 
-    # ---------- 🏨 Free the room when booking deleted ----------
+    # 1️⃣ Mark booking as cancelled instead of deleting
+    booking.status = "Cancelled"
+
+    # 2️⃣ Free the room
     room = Room.query.get(booking.room_id)
     if room:
         room.status = "Available"
 
-    db.session.delete(booking)
+    # 3️⃣ Update associated payment(s) to 'Refunded'
+    payments = Payment.query.filter_by(booking_id=booking.id).all()
+    for p in payments:
+        p.status = "Refunded"
+
     db.session.commit()
 
-    flash("Booking deleted and room marked as available", "success")
+    flash("Booking cancelled, room marked available, payment marked as refunded", "success")
     return redirect(url_for('bookings'))
 
 
@@ -315,7 +321,8 @@ def add_payment():
             food=food,
             amount=total,
             date=request.form['date'],
-            payment_method=request.form['mode']
+            payment_method=request.form['mode'],
+            status="Paid"
         )
 
         db.session.add(new_payment)

@@ -32,7 +32,7 @@ class Booking(db.Model):
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
     checkin = db.Column(db.String(20), nullable=False)
     checkout = db.Column(db.String(20), nullable=False)
-
+    status = db.Column(db.String(20), default="Active")
     payments = db.relationship("Payment", backref="booking", cascade="all, delete-orphan")
 
 
@@ -48,3 +48,4 @@ class Payment(db.Model):
     amount = db.Column(db.Float)
     date = db.Column(db.String(20))
     payment_method = db.Column(db.String(50))
+    status = db.Column(db.String(20), default="Paid")
