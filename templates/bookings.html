@@ -202,12 +202,14 @@
   <table>
     <thead>
       <tr>
-        <th>ID</th>
-        <th>Customer</th>
-        <th>Room</th>
-        <th>Check-in</th>
-        <th>Check-out</th>
-        <th>Actions</th>
+       <th>ID</th>
+      <th>Customer</th>
+      <th>Room</th>
+      <th>Status</th>
+      <th>Check-in</th>
+      <th>Check-out</th>
+      <th>Actions</th>
+
       </tr>
     </thead>
     <tbody>
@@ -216,6 +218,8 @@
         <td data-label="ID">{{ b.id }}</td>
         <td data-label="Customer">{{ b.customer.name if b.customer else "N/A" }}</td>
         <td data-label="Room">{{ b.room.room_no if b.room else "N/A" }}</td>
+        <td data-label="Status">{{ b.room.status if b.room else "N/A" }}</td>
+
         <td data-label="Check-in">{{ b.checkin }}</td>
         <td data-label="Check-out">{{ b.checkout }}</td>
         <td data-label="Actions" class="actions">
